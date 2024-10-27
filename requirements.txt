@@ -1,0 +1,12 @@
+numpy
+pretty_midi
+pypianoroll
+torch
+fastapi
+python-multipart
+uvicorn
+uuid
+google-cloud-storage
+midi2audio
+
+
