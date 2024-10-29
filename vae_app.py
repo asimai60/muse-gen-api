@@ -86,10 +86,15 @@ async def process_midi_file(model_type: str, file: UploadFile = File(...)) -> Di
 
     try:
         # Process the MIDI file using the selected model
-        if model_type == 'vae':
-            midi_content, wav_content = generate_music_vae(temp_file_path)
-        else:  # rnn
-            midi_content, wav_content = generate_music_rnn(temp_file_path)
+        try:
+            if model_type == 'vae':
+                midi_content, wav_content = generate_music_vae(temp_file_path)
+            else:  # rnn
+                midi_content, wav_content = generate_music_rnn(temp_file_path)
+        except ValueError as e:
+            if "No piano part found in the MIDI file" in str(e):
+                raise HTTPException(status_code=400, detail="No piano part found in the MIDI file. Please provide a MIDI file containing piano music.")
+            raise e
         
         if midi_content is None or wav_content is None:
             raise HTTPException(status_code=400, detail="Failed to process MIDI file")

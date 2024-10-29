@@ -1,1 +1,3 @@
 muse-gen-midi-files-keys.json
+.dockerignore
+docker_build.bat

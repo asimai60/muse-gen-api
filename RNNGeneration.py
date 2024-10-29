@@ -210,7 +210,10 @@ def extract_piano_sequence(midi_data):
         midi_data (music21.stream.Score): Parsed MIDI data
         
     Returns:
-        list: Sequence of note/chord strings, or None if no piano part found
+        list: Sequence of note/chord strings
+        
+    Raises:
+        ValueError: If no piano part is found in the MIDI file
     """
     parts = m21.instrument.partitionByInstrument(midi_data)
     
@@ -221,7 +224,7 @@ def extract_piano_sequence(midi_data):
             break
     
     if not piano_part:
-        return None
+        raise ValueError("No piano part found in the MIDI file. Please provide a MIDI file containing piano music.")
 
     sequence = []
     for element in piano_part:
@@ -243,6 +246,9 @@ def generate_music_rnn(input_midi_path, sequence_length=500, temperature=1.2):
         
     Returns:
         tuple: (midi_bytes, wav_bytes) or (None, None) if generation fails
+        
+    Raises:
+        ValueError: If no piano part is found in the input MIDI file
     """
     # Resolve absolute path
     if not os.path.isabs(input_midi_path):
@@ -255,9 +261,6 @@ def generate_music_rnn(input_midi_path, sequence_length=500, temperature=1.2):
     # Process input MIDI
     midi_data = m21.converter.parse(input_midi_path)
     piano_sequence = extract_piano_sequence(midi_data)
-    
-    if not piano_sequence:
-        return None, None
     
     # Generate new sequence
     input_sequence = [note_to_int[note] for note in piano_sequence if note in note_to_int]
@@ -293,6 +296,9 @@ def generate_music_api(input_midi_path):
         
     Returns:
         tuple: (midi_bytes, wav_bytes) containing the generated music
+        
+    Raises:
+        ValueError: If no piano part is found in the input MIDI file
     """
     return generate_music_rnn(input_midi_path)
 
