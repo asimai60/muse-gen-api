@@ -8,5 +8,8 @@ uvicorn
 uuid
 google-cloud-storage
 midi2audio
+scipy
+music21
+
 
 
