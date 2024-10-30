@@ -163,8 +163,18 @@ def extract_notes_from_pianoroll(pianoroll: torch.Tensor) -> List[Tuple[int, flo
     instruments = ['Piano', 'Guitar', 'Bass', 'Strings', 'Drums']
     notes = []
     
+    # Find the maximum length among all tracks
+    max_length = max(pianoroll[i].shape[0] for i in range(len(instruments)))
+    
+    # Process each track, padding if necessary
     for i, instrument in enumerate(instruments):
         track = pianoroll[i].numpy()
+        
+        # Pad shorter tracks to match max_length
+        if track.shape[0] < max_length:
+            padding = np.zeros((max_length - track.shape[0], track.shape[1]))
+            track = np.vstack([track, padding])
+        
         active_notes = np.where(track > 0)
         for time, pitch in zip(*active_notes):
             # Convert time steps to seconds (assuming 2 steps per second)
@@ -378,9 +388,16 @@ def generate_music_gpt(input_midi_path: str) -> Tuple[Optional[bytes], Optional[
         multitrack = pypianoroll.read(input_midi_path)
         multitrack.set_resolution(2)  # 2 steps per second
         
-        # Convert to tensor format - now taking first 64 time steps
+        # Find maximum track length
+        max_length = max(track.pianoroll.shape[0] for track in multitrack.tracks)
+        
+        # Convert to tensor format with padding
         pianoroll = torch.tensor(np.stack([
-            track.pianoroll[:64] for track in multitrack.tracks
+            np.pad(
+                track.pianoroll[:64] if track.pianoroll.shape[0] >= 64 else track.pianoroll,
+                ((0, max(64 - track.pianoroll.shape[0], 0)), (0, 0)),
+                mode='constant'
+            ) for track in multitrack.tracks
         ]), dtype=torch.float32)
         
         # Extract notes from first 64 time steps
