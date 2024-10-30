@@ -1,139 +1,201 @@
-# VAE Music Generator
+# Multi-Model Music Generator API
 
-This project is a FastAPI-based application that processes MIDI files using both Variational Autoencoder (VAE) and Recurrent Neural Network (RNN) models to generate new music tracks. It leverages multiple machine learning approaches to create multi-instrumental music by analyzing and transforming MIDI files.
+A sophisticated FastAPI-based application that generates music using multiple AI approaches: Variational Autoencoder (VAE), Recurrent Neural Network (RNN), and GPT-based generation. The system processes MIDI files to create new musical compositions with support for multiple instruments and styles.
 
-## Project Overview
+---
 
-The Music Generator supports two distinct approaches to music generation:
-1. **VAE-based Generation**: Creates multi-instrumental tracks with piano, guitar, bass, strings, and drums
-2. **RNN-based Generation**: Focuses on piano-specific generation with melodic continuity
+## ✨ Features
 
-The application is containerized using Docker and deployed on Google Cloud, with generated files stored in Google Cloud Storage.
+### 🎵 Multiple Generation Approaches
+- **VAE Generation**: Multi-instrumental tracks (piano, guitar, bass, strings, drums)
+- **RNN Generation**: Piano-focused melodic sequences
+- **GPT Generation**: Natural language model-based composition
+- **Real-time Audio Synthesis**: WAV file generation from MIDI
 
-## Features
+### 🛠️ Technical Capabilities
+- Multi-track instrument support
+- Conditional generation between instruments
+- Temperature-based sampling for creative control
+- Cloud storage integration
+- Docker containerization
+- Robust error handling and validation
 
-- Dual model support (VAE and RNN) for diverse music generation approaches
-- Multi-instrumental track generation (VAE model)
-- Piano-focused melodic generation (RNN model)
-- Upload and process MIDI files
-- Download generated MIDI and WAV files
-- Containerized with Docker for easy deployment
-- Cloud storage integration for file management
-- Real-time audio synthesis
+---
 
-## Technical Architecture
+## 🏗️ Architecture
 
-### VAE Components
-- **ConvVAE**: Convolutional Variational Autoencoder for learning musical patterns
-- **ConditionalNN**: Neural network for harmony generation
-- **MelodyNN**: Specialized network for melody sequence generation
-- **Multi-track Support**: Separate models for piano, guitar, bass, strings, and drums
+### 🧠 VAE Components
+- **ConvVAE**: Convolutional VAE for pattern learning
+- **ConditionalNN**: Harmony generation network
+- **MelodyNN**: Specialized melody sequence generator
+- **Multi-track Support**: Separate models per instrument
 
-### RNN Components
-- **GenerationRNN**: GRU-based recurrent neural network for sequential note generation
-- **Embedding Layer**: For learning note representations
-- **Multinomial Sampling**: Temperature-based sampling for creative generation
+### 🔄 RNN Components
+- **GenerationRNN**: GRU-based sequence generator
+- **Embedding Layer**: Note representation learning
+- **Multinomial Sampling**: Creative generation control
 
-## Setup Instructions
+### 🤖 GPT Components
+- **Text-based Generation**: Musical sequence to text conversion
+- **Prompt Engineering**: Musically-aware context creation
+- **Response Parsing**: Conversion back to MIDI format
+
+---
+
+## 🚀 API Endpoints
+
+### Process MIDI File
+```http
+POST /process-midi/{model_type}/
+```
+#### Parameters
+- `model_type`: 'vae', 'rnn', or 'gpt'
+- `file`: MIDI file upload
+
+#### Response
+```json
+{
+  "midi_url": "https://storage.googleapis.com/bucket/file.mid",
+  "wav_url": "https://storage.googleapis.com/bucket/file.wav",
+  "model_type": "vae"
+}
+```
+
+### Download Generated File
+```http
+GET /download-midi/
+```
+#### Parameters
+- `url`: Signed URL from process endpoint
+
+---
+
+## 🔧 Setup
 
 ### Prerequisites
-
+- Python 3.9+
 - Docker
-- Python 3.9
 - Google Cloud Storage access
-- Required Python packages (see requirements.txt)
+- OpenAI API key (for GPT generation)
 
 ### Installation
 
-1. **Clone the repository:**
+1. **Clone Repository**:
    ```bash
-   git clone https://github.com/asimai60/vae-music-generator.git
-   cd vae-music-generator
+   git clone https://github.com/yourusername/music-generator-api.git
+   cd music-generator-api
    ```
 
-2. **Install dependencies:**
+2. **Environment Setup**:
    ```bash
+   python -m venv venv
+   source venv/bin/activate  # or `venv\Scripts\activate` on Windows
    pip install -r requirements.txt
    ```
 
-3. **Build the Docker image:**
+3. **Configuration**:
    ```bash
-   docker build -t vae-music-generator .
+   # Create .env file
+   OPENAI_API_KEY=your_api_key_here
+   
+   # Place Google Cloud credentials in:
+   muse-gen-midi-files-keys.json
    ```
 
-4. **Configure Google Cloud credentials:**
-   - Place your service account key file as `muse-gen-midi-files-keys.json` in the project root
-
-5. **Run the Docker container:**
+4. **Docker Build**:
    ```bash
-   docker run -p 8080:8080 vae-music-generator
+   docker build -t music-generator-api .
    ```
 
-## API Documentation
+5. **Run Container**:
+   ```bash
+   docker run -p 8080:8080 music-generator-api
+   ```
 
-### Process MIDI File
-- **Endpoint:** `POST /process-midi/{model_type}/`
-- **Parameters:**
-  - `model_type`: Either 'vae' or 'rnn'
-  - `file`: MIDI file upload
-- **Response:**
-  ```json
-  {
-    "midi_url": "https://storage.googleapis.com/bucket/generated_midi.mid",
-    "wav_url": "https://storage.googleapis.com/bucket/generated_audio.wav",
-    "model_type": "vae"
-  }
-  ```
+---
 
-### Download Generated File
-- **Endpoint:** `GET /download-midi/`
-- **Parameters:**
-  - `url`: Signed URL from the process endpoint
+## 📁 Project Structure
 
-## Code Structure
+```
+├── vae_app.py           # FastAPI application
+├── conv_vae.py          # VAE model architecture
+├── RNNGeneration.py     # RNN implementation
+├── gpt_generation.py    # GPT-based generation
+├── vae_helpers.py       # Utility functions
+├── vae_model_generate.py # VAE generation logic
+├── Dockerfile           # Container configuration
+└── requirements.txt     # Dependencies
+```
 
-### Core Components
-- **`vae_app.py`:** FastAPI application and endpoint definitions
-- **`conv_vae.py`:** VAE model architectures and neural networks
-- **`vae_model_generate.py`:** Music generation logic for VAE approach
-- **`RNNGeneration.py`:** RNN-based music generation implementation
-- **`vae_helpers.py`:** Utility functions for VAE operations
+---
 
-### Helper Modules
-- Note mapping and conversion utilities
-- MIDI file processing functions
-- Audio synthesis capabilities
-- Cloud storage integration
-
-## Model Architecture Details
+## 🤖 Model Details
 
 ### VAE Model
-- Convolutional layers for both encoder and decoder
-- Latent space dimension: 32
+- Latent space: 32 dimensions
 - Multiple instrument-specific models
-- Conditional generation between instruments
+- Conditional generation capabilities
+- Convolutional architecture
 
 ### RNN Model
 - GRU-based architecture
 - Embedding dimension: 96
 - 2-layer configuration
-- Temperature-based sampling for generation
+- Temperature-based sampling
 
-## Contribution Guidelines
+### GPT Model
+- GPT-4 based generation
+- Musical pattern recognition
+- Style-aware continuation
+- Multi-instrument coordination
 
-We welcome contributions! Please follow these guidelines:
+---
 
-1. **Fork the repository** and create a new branch for your feature or bugfix
-2. **Write clear, concise commit messages**
-3. **Follow the project's code style**
-4. **Add tests** for new features
-5. **Update documentation** as needed
-6. **Submit a pull request** with a detailed description
+## ⚠️ Error Handling
 
-## License
+The API implements comprehensive error handling for:
+- Invalid MIDI files
+- Missing instrument tracks
+- Model generation failures
+- Storage/retrieval issues
+- API quota limitations
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+---
 
-## Contact
+## 🔒 Security
 
-For questions or support, please contact [your-email@example.com].
+- CORS configuration for specified origins
+- Signed URLs for file access
+- Environment variable protection
+- Docker container isolation
+
+---
+
+## ⚡ Performance
+
+- Asynchronous API endpoints
+- Efficient file handling
+- Optimized model inference
+- Cloud storage integration
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit changes
+4. Push to the branch
+5. Create a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+---
+
+## 📧 Contact
+
+For support or queries, please contact [your-email@example.com].

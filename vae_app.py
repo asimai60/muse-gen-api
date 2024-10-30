@@ -28,6 +28,7 @@ from datetime import timedelta
 import uuid
 import io
 from typing import Dict, Optional, Union
+from gpt_generation import generate_music_api as generate_music_gpt
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -75,8 +76,8 @@ async def process_midi_file(model_type: str, file: UploadFile = File(...)) -> Di
     Raises:
         HTTPException: If model type is invalid, processing fails, or upload fails
     """
-    if model_type not in ['vae', 'rnn']:
-        raise HTTPException(status_code=400, detail="Model type must be either 'vae' or 'rnn'")
+    if model_type not in ['vae', 'rnn', 'gpt']:
+        raise HTTPException(status_code=400, detail="Model type must be either 'vae', 'rnn', or 'gpt'")
 
     # Save the uploaded file temporarily
     with tempfile.NamedTemporaryFile(delete=False, suffix=".mid") as temp_file:
@@ -89,8 +90,10 @@ async def process_midi_file(model_type: str, file: UploadFile = File(...)) -> Di
         try:
             if model_type == 'vae':
                 midi_content, wav_content = generate_music_vae(temp_file_path)
-            else:  # rnn
+            elif model_type == 'rnn':
                 midi_content, wav_content = generate_music_rnn(temp_file_path)
+            else:  # gpt
+                midi_content, wav_content = generate_music_gpt(temp_file_path)
         except ValueError as e:
             if "No piano part found in the MIDI file" in str(e):
                 raise HTTPException(status_code=400, detail="No piano part found in the MIDI file. Please provide a MIDI file containing piano music.")
