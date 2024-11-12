@@ -195,7 +195,3 @@ The API implements comprehensive error handling for:
 This project is licensed under the MIT License - see the LICENSE file for details.
 
 ---
-
-## 📧 Contact
-
-For support or queries, please contact [your-email@example.com].
