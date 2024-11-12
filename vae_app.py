@@ -16,7 +16,7 @@ Dependencies:
     - tempfile: For temporary file handling
 """
 
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException, Form
 from fastapi.responses import FileResponse
 import tempfile
 import os
@@ -59,13 +59,20 @@ app.add_middleware(
              400: {"description": "Invalid model type or processing failed"},
              500: {"description": "Failed to upload processed files"}
          })
-async def process_midi_file(model_type: str, file: UploadFile = File(...)) -> Dict[str, str]:
+async def process_midi_file(
+    model_type: str, 
+    file: UploadFile = File(...),
+    prediction_steps: Optional[int] = Form(3),
+    concatenate: Optional[str] = Form("true")
+) -> Dict[str, str]:
     """
     Process an uploaded MIDI file using either VAE or RNN model.
     
     Args:
         model_type (str): The type of model to use ('vae' or 'rnn')
         file (UploadFile): The uploaded MIDI file to process
+        prediction_steps (int, optional): Number of prediction steps. Defaults to 3.
+        concatenate (bool, optional): Whether to concatenate generated music with original. Defaults to True.
     
     Returns:
         Dict[str, str]: Dictionary containing:
@@ -76,6 +83,10 @@ async def process_midi_file(model_type: str, file: UploadFile = File(...)) -> Di
     Raises:
         HTTPException: If model type is invalid, processing fails, or upload fails
     """
+    concatenate = str(concatenate).strip().lower()
+    concatenate_bool = concatenate not in ('false', '0', 'no', 'n', '')
+    
+    
     if model_type not in ['vae', 'rnn', 'gpt']:
         raise HTTPException(status_code=400, detail="Model type must be either 'vae', 'rnn', or 'gpt'")
 
@@ -89,7 +100,7 @@ async def process_midi_file(model_type: str, file: UploadFile = File(...)) -> Di
         # Process the MIDI file using the selected model
         try:
             if model_type == 'vae':
-                midi_content, wav_content = generate_music_vae(temp_file_path)
+                midi_content, wav_content = generate_music_vae(temp_file_path, prediction_steps=prediction_steps, concatenate=concatenate_bool)
             elif model_type == 'rnn':
                 midi_content, wav_content = generate_music_rnn(temp_file_path)
             else:  # gpt

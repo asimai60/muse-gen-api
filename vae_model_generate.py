@@ -92,7 +92,7 @@ def load_and_parse_midi(midi_path: str) -> torch.Tensor:
             print("No valid parts found in the MIDI file")
             return None
 
-    print("Combined pianoroll shape:", combined_pianoroll.shape)
+    # print("Combined pianoroll shape:", combined_pianoroll.shape)
     return combined_pianoroll
 
 def generate_music_vae(sample: torch.Tensor, vae_models: tuple, nn_models: tuple, 
@@ -279,22 +279,26 @@ def create_wav_file(generated_track: torch.Tensor) -> bytes:
     
     return wav_buffer.getvalue()
 
-def generate_music(sample: torch.Tensor, prediction_steps: int = 3) -> torch.Tensor:
+def generate_music(sample: torch.Tensor, prediction_steps: int = 3, concatenate: bool = True) -> torch.Tensor:
     """
     Generate a musical sequence by extending the input sample.
     
     Args:
         sample (torch.Tensor): Input music of shape (5, time_steps, 128)
         prediction_steps (int): Number of 32-step sequences to generate
-        
+        concatenate (bool): Whether to concatenate generated music with original
     Returns:
         torch.Tensor: Generated music sequence
     """
     vae_models, nn_models = load_models()
 
-    generated_track = torch.zeros((5, sample.shape[1] + 32 * (prediction_steps + 1), 128), device=device)
-    generated_track[:, :sample.shape[1], :] = sample
-
+    if concatenate:
+        generated_track = torch.zeros((5, sample.shape[1] + 32 * prediction_steps, 128), device=device)
+        generated_track[:, :sample.shape[1], :] = sample
+        start_idx = sample.shape[1]
+    else:
+        generated_track = torch.zeros((5, 32 * prediction_steps, 128), device=device)
+        start_idx = 0
     sample = sample[:, -32:, :]
     noise_sd = random.uniform(0.3, 0.7)
 
@@ -307,10 +311,10 @@ def generate_music(sample: torch.Tensor, prediction_steps: int = 3) -> torch.Ten
             threshold=0.3,
             binarize=True
         )
-        generated_track[:, sample.shape[1] + 32*i:sample.shape[1] + 32*(i+1), :] = sample
+        generated_track[:, start_idx + 32*i:start_idx + 32*(i+1), :] = sample
     return generated_track
 
-def generate_music_api(input_midi_path: str) -> tuple:
+def generate_music_api(input_midi_path: str, prediction_steps: int = 3, concatenate: bool = True) -> tuple:
     """
     Process MIDI file and return generated MIDI and WAV file content.
     
@@ -324,7 +328,7 @@ def generate_music_api(input_midi_path: str) -> tuple:
     if sample is None:
         return None, None
         
-    generated_track = generate_music(sample, prediction_steps=3)
+    generated_track = generate_music(sample, prediction_steps=prediction_steps, concatenate=concatenate)
     
     # Convert the generated track to both MIDI and WAV bytes
     midi_content = create_midi_file(generated_track)
