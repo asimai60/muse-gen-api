@@ -82,7 +82,7 @@ GET /download-midi/
 
 1. **Clone Repository**:
    ```bash
-   git clone https://github.com/yourusername/music-generator-api.git
+   git clone https://github.com/asimai60/music-generator-api.git
    cd music-generator-api
    ```
 
@@ -148,35 +148,6 @@ GET /download-midi/
 - Musical pattern recognition
 - Style-aware continuation
 - Multi-instrument coordination
-
----
-
-## ⚠️ Error Handling
-
-The API implements comprehensive error handling for:
-- Invalid MIDI files
-- Missing instrument tracks
-- Model generation failures
-- Storage/retrieval issues
-- API quota limitations
-
----
-
-## 🔒 Security
-
-- CORS configuration for specified origins
-- Signed URLs for file access
-- Environment variable protection
-- Docker container isolation
-
----
-
-## ⚡ Performance
-
-- Asynchronous API endpoints
-- Efficient file handling
-- Optimized model inference
-- Cloud storage integration
 
 ---
 
